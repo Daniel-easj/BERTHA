@@ -7,6 +7,8 @@ import android.service.autofill.UserData;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -44,10 +46,15 @@ public class MainActivity extends AppCompatActivity {
 
     // Listview items
     private SensorUserData[] userData;
-    private ArrayAdapter<SensorUserData> adapter;
-    private ListView listView;
-
+//    private ArrayAdapter<SensorUserData> adapter;
+//    private ListView listView;
     SwipeRefreshLayout pullToRefresh;
+
+    // RecyclerView Items
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter mAdapter;
+
+
 
     private static final AddSensorData httpPostHandler = new AddSensorData();
 
@@ -57,14 +64,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         pullToRefresh =  findViewById(R.id.pullToRefresh);
-        listView = findViewById(R.id.user_data_list);
+        recyclerView = findViewById(R.id.my_recycler_view);
+
 
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 updateList();
-                pullToRefresh.setRefreshing(false);
             }
         });
 
@@ -79,9 +88,9 @@ public class MainActivity extends AppCompatActivity {
         // Restore userData array
         if (savedInstanceState != null && savedInstanceState.getSerializable("userdata") != null){
             userData = (SensorUserData[]) savedInstanceState.getSerializable("userdata");
-            makeListView();
-
+            initRecyclerView(userData);
         }
+
     }
 
     // Restore state when orientation changes
@@ -139,25 +148,41 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    private void makeListView() {
+    // Old method for creating listview
+//    private void makeListView() {
+//
+//        adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, userData);
+//
+//        for (SensorUserData user : userData) {
+//            user.setUserEmail(userEmail);
+//        }
+//
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Intent intent = new Intent(getBaseContext(), SensorDataDetailedView.class);
+//                intent.putExtra("object", userData[position]);
+//
+//                startActivity(intent);
+//            }
+//        });
+//
+//        listView.setAdapter(adapter);
+//    }
 
-        adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, userData);
+    // Setup RecyclerView
+    private void initRecyclerView(SensorUserData[] userData){
 
         for (SensorUserData user : userData) {
             user.setUserEmail(userEmail);
         }
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getBaseContext(), SensorDataDetailedView.class);
-                intent.putExtra("object", userData[position]);
+        recyclerView = findViewById(R.id.my_recycler_view);
+        mAdapter = new RecyclerViewAdapter(this, userData);
 
-                startActivity(intent);
-            }
-        });
 
-        listView.setAdapter(adapter);
+        recyclerView.setAdapter(mAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
 
@@ -185,16 +210,20 @@ public class MainActivity extends AppCompatActivity {
 
                     jsonWristbandData = jsonString;
                     httpPostHandler.add(jsonWristbandData, usernameUrl);
+
                 }
                 else{
                     Log.e(JSON_LOG, jsonString);
 
                     userData = gson.fromJson(jsonString, SensorUserData[].class);
-                    makeListView();
+
+                    initRecyclerView(userData);
 
                     Toast successToast = Toast.makeText(getApplicationContext(), "Data received", Toast.LENGTH_SHORT);
                     successToast.show();
                 }
+
+            pullToRefresh.setRefreshing(false);
         }
 
         @Override

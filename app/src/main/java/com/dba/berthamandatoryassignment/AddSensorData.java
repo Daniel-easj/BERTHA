@@ -32,6 +32,8 @@ public class AddSensorData {
 
         PostSensorData task = new PostSensorData();
         task.execute(postUrl, jsonString);
+
+
     }
 
 
@@ -61,7 +63,7 @@ public class AddSensorData {
                 osw.flush();
                 osw.close();
 
-                // TODO Update Error handling fra Anders
+                // TODO Update Error handling
                 int responseCode = connection.getResponseCode();
                 if (responseCode / 100 != 2) {
                     String responseMessage = connection.getResponseMessage();

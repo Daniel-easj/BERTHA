@@ -12,10 +12,10 @@ public class SensorUserData implements Serializable {
 
     // Values of Latitude, Longitude and Noise are randomly generated to simulate a change in position and environment of user
     public double getLatitude() {
-        return rand.nextDouble() * 1.001 + 55.6;
+        return latitude;
     }
     public double getLongitude() {
-        return rand.nextDouble() * 1.001 + 12;
+        return longitude;
     }
 
     public SensorUserData(){
@@ -32,8 +32,9 @@ public class SensorUserData implements Serializable {
         this.temperature = temperature;
         this.humidity = humidity;
 
-        this.latitude = getLatitude();
-        this.longitude = getLongitude();
+        this.latitude = rand.nextDouble() * 1.001 + 55.6;
+        this.longitude = rand.nextDouble() * 1.001 + 12;
+
         this.utc = new Date().getTime();
 
         this.userId = userId;

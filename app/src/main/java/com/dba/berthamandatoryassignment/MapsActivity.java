@@ -27,7 +27,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent = getIntent();
         userData = (SensorUserData[]) intent.getSerializableExtra("userData");
 
-
     }
 
 
@@ -40,15 +39,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        // Add markers
         for (SensorUserData data: userData) {
-            googleMap.addMarker(new MarkerOptions().position(new LatLng(data.getLatitude(), data.getLongitude())).title("a marker"));
+            googleMap.addMarker(new MarkerOptions().position(new LatLng(data.getLatitude(), data.getLongitude())).title("Data from: " + data.getDateFormatted()));
         }
 
-        // Add markers
+        // Move camera to a datapoint
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userData[0].getLatitude(),userData[0].getLongitude())));
     }
 }
