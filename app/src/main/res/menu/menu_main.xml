@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/update_data_list"
+        android:icon="@drawable/ic_refresh_white_24dp"
+        android:orderInCategory="1"
+        android:title="Update data list"
+        app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/create_sensor_data"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:orderInCategory="2"
+        android:title="Create new sensor data"
+        app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/maps"
+        android:icon="@drawable/ic_my_location_black_24dp"
+        android:orderInCategory="3"
+        android:title="Go to Maps activity"
+        app:showAsAction="ifRoom"
+        />
+
+
+</menu>
