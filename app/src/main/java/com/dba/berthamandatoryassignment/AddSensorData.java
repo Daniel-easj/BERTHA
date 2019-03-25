@@ -16,19 +16,14 @@ import java.net.URL;
 
 
 public class AddSensorData {
-    private static SensorRawData rawData;
-    private static SensorUserData sensorUserData;
     private static final String postUrl = "https://berthabackendrestprovider.azurewebsites.net/api/data";
 
-    public void add(String data, String userId){
-        Log.e("JDATA", "" + data);
+    public void add(SensorUserData userData){
+        Log.e("JDATA", "" + userData);
 
         Gson gson = new Gson();
 
-        rawData = gson.fromJson(data, SensorRawData.class);
-        sensorUserData = SensorUserData.combineData(rawData, userId);
-
-        String jsonString = gson.toJson(sensorUserData);
+        String jsonString = gson.toJson(userData);
 
         PostSensorData task = new PostSensorData();
         task.execute(postUrl, jsonString);

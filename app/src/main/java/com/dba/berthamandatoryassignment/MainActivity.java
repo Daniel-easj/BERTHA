@@ -27,10 +27,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
     private static final String JSON_LOG = "JSONLOG";
@@ -46,12 +48,12 @@ public class MainActivity extends AppCompatActivity {
     final Gson gson = new GsonBuilder().create();
 
     // UserData collection items (SensorUserData class)
-    private SensorUserData[] userData;
+    //private SensorUserData[] userData;
 
-    //private ArrayList<SensorUserData> userData;
+    private static ArrayList<SensorUserData> userData = new ArrayList<>();
     // RecyclerView Items
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private RecyclerViewAdapter mAdapter;
     SwipeRefreshLayout pullToRefresh;
 
 
@@ -87,7 +89,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Restore userData array
         if (savedInstanceState != null && savedInstanceState.getSerializable("userdata") != null){
-            userData = (SensorUserData[]) savedInstanceState.getSerializable("userdata");
+            userData = (ArrayList<SensorUserData>) savedInstanceState.getSerializable("userdata");
+
+            assert userData != null;
             initRecyclerView(userData);
         }
 
@@ -148,30 +152,9 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    // Old method for creating listview
-//    private void makeListView() {
-//
-//        adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, userData);
-//
-//        for (SensorUserData user : userData) {
-//            user.setUserEmail(userEmail);
-//        }
-//
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(getBaseContext(), SensorDataDetailedView.class);
-//                intent.putExtra("object", userData[position]);
-//
-//                startActivity(intent);
-//            }
-//        });
-//
-//        listView.setAdapter(adapter);
-//    }
 
     // Setup RecyclerView
-    private void initRecyclerView(SensorUserData[] userData){
+    private void initRecyclerView(ArrayList<SensorUserData> userData){
 
         for (SensorUserData user : userData) {
             user.setUserEmail(userEmail);
@@ -208,14 +191,28 @@ public class MainActivity extends AppCompatActivity {
                 if (isWristbandDataRequest){
                     isWristbandDataRequest = false;
 
+                    SensorRawData rawData = gson.fromJson(jsonString, SensorRawData.class);
+                    SensorUserData userData = SensorUserData.combineData(rawData, usernameUrl);
+
                     jsonWristbandData = jsonString;
-                    httpPostHandler.add(jsonWristbandData, usernameUrl);
+                    httpPostHandler.add(userData);
+
+
+
+                    mAdapter.addItem(0, userData, userEmail);
 
                 }
                 else{
                     Log.e(JSON_LOG, jsonString);
 
-                    userData = gson.fromJson(jsonString, SensorUserData[].class);
+                    SensorUserData[] userDataTemp = gson.fromJson(jsonString, SensorUserData[].class);
+
+
+                    if (userData != null || !userData.isEmpty()){
+                        userData.clear();
+                    }
+
+                    userData.addAll(Arrays.asList(userDataTemp));
 
                     initRecyclerView(userData);
 

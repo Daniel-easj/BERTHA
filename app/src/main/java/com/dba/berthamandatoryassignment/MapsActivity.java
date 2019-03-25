@@ -11,10 +11,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private SensorUserData[] userData;
+    private ArrayList<SensorUserData> userData;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +28,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         Intent intent = getIntent();
-        userData = (SensorUserData[]) intent.getSerializableExtra("userData");
+        userData = (ArrayList<SensorUserData>) intent.getSerializableExtra("userData");
 
     }
 
@@ -51,6 +54,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         // Move camera to a datapoint
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userData[0].getLatitude(),userData[0].getLongitude())));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userData.get(0).getLatitude(),userData.get(0).getLongitude())));
     }
 }
