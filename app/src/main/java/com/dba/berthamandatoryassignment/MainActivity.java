@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final String JSON_LOG = "JSONLOG";
@@ -44,15 +45,14 @@ public class MainActivity extends AppCompatActivity {
 
     final Gson gson = new GsonBuilder().create();
 
-    // Listview items
+    // UserData collection items (SensorUserData class)
     private SensorUserData[] userData;
-//    private ArrayAdapter<SensorUserData> adapter;
-//    private ListView listView;
-    SwipeRefreshLayout pullToRefresh;
 
+    //private ArrayList<SensorUserData> userData;
     // RecyclerView Items
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
+    SwipeRefreshLayout pullToRefresh;
 
 
 
