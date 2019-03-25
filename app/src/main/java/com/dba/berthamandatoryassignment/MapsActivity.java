@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -48,12 +49,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        int zoomlevel = 10;
+        LatLng marker = new LatLng(userData.get(0).getLatitude(),userData.get(0).getLongitude());
+
         // Add markers
         for (SensorUserData data: userData) {
             googleMap.addMarker(new MarkerOptions().position(new LatLng(data.getLatitude(), data.getLongitude())).title("Data from: " + data.getDateFormatted()));
         }
 
         // Move camera to a datapoint
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(userData.get(0).getLatitude(),userData.get(0).getLongitude())));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker, zoomlevel),2000, null);
     }
 }
