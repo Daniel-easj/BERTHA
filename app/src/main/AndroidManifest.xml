@@ -35,7 +35,9 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps" />
+            android:label="@string/title_activity_maps">
+        </activity>
+
         <activity android:name=".UserLogin">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,7 +46,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".SensorDataDetailedView" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".MainActivity">
+
+
+        </activity>
     </application>
 
 </manifest>

@@ -1,10 +1,8 @@
 package com.dba.berthamandatoryassignment
 
 import android.content.Intent
-import android.hardware.Sensor
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_sensor_data_detailed_view.*
 
 

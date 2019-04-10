@@ -1,11 +1,13 @@
 package com.dba.berthamandatoryassignment;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -19,11 +21,23 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class UserLogin extends AppCompatActivity {
+
+    public FirebaseAuth getmAuth() {
+        return mAuth;
+    }
+
     private FirebaseAuth mAuth;
     private EditText emailText;
     private EditText passwordText;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private String TAG = "UserLogin";
+
+    public static final String PREF_FILE_NAME = "loginPref";
+    private SharedPreferences preferences;
+    private CheckBox checkBox;
+
+    public static final String USERNAME = "USERNAME";
+    public static final String PASSWORD = "PASSWORD";
 
     private ProgressBar spinner;
 
@@ -33,13 +47,25 @@ public class UserLogin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
 
+        checkBox = findViewById(R.id.checkBox);
         emailText = findViewById(R.id.editTextEmail);
         passwordText = findViewById(R.id.editTextPassword);
         spinner = findViewById(R.id.progressBar1);
 
         spinner.setVisibility(View.GONE);
 
-        // ??
+        preferences = getSharedPreferences(PREF_FILE_NAME, MODE_PRIVATE);
+
+        String username = preferences.getString(USERNAME, null);
+        String password = preferences.getString(PASSWORD, null);
+        if (username != null && password != null) {
+            emailText.setText(username);
+            passwordText.setText(password);
+            checkBox.setChecked(true);
+        }
+
+
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -106,7 +132,7 @@ public class UserLogin extends AppCompatActivity {
     }
 
     // SIGN IN HANDLER
-    public void signIn(String email, String password){
+    public void signIn(final String email, final String password){
         spinner.setVisibility(View.VISIBLE);
 
         mAuth.signInWithEmailAndPassword(email, password)
@@ -118,6 +144,17 @@ public class UserLogin extends AppCompatActivity {
                             Toast.makeText(getBaseContext(), "User signed in", Toast.LENGTH_SHORT).show();
 
                             FirebaseUser user = mAuth.getCurrentUser();
+
+
+                            SharedPreferences.Editor editor = preferences.edit();
+                            if (checkBox.isChecked()) {
+                                editor.putString(USERNAME, email);
+                                editor.putString(PASSWORD, password);
+                            } else {
+                                editor.remove(USERNAME);
+                                editor.remove(PASSWORD);
+                            }
+                            editor.apply();
 
                             // If sign in is successful, go to main activity
                             Intent intent = new Intent(getBaseContext(), MainActivity.class);
@@ -132,6 +169,8 @@ public class UserLogin extends AppCompatActivity {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(getBaseContext(), "Sign in failed: " + e.getMessage(),
                                     Toast.LENGTH_SHORT).show();
+
+
                         }
 
                         if (!task.isSuccessful()) {

@@ -3,6 +3,7 @@ package com.dba.berthamandatoryassignment;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.service.autofill.UserData;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -42,23 +44,43 @@ public class MainActivity extends AppCompatActivity {
     private static String jsonWristbandData;
 
     //Firebase user data
-    private static String usernameUrl;
-    private static String userEmail;
+    private String usernameUrl;
+    private String userEmail;
 
     final Gson gson = new GsonBuilder().create();
 
-    // UserData collection items (SensorUserData class)
-    //private SensorUserData[] userData;
+    public static ArrayList<SensorUserData> getUserData() {
+        return userData;
+    }
 
     private static ArrayList<SensorUserData> userData = new ArrayList<>();
+
     // RecyclerView Items
     private RecyclerView recyclerView;
     private RecyclerViewAdapter mAdapter;
     SwipeRefreshLayout pullToRefresh;
 
-
+    private TextView dataCountView;
+    private TextView statusTextView;
 
     private static final AddSensorData httpPostHandler = new AddSensorData();
+
+
+    // Timer
+    private static int timePressed = 0;
+    private static boolean uploadIsActive = false;
+    private final Handler timerHandler = new Handler();
+    private final Runnable timerRunnable = new Runnable() {
+
+        // will NOT run in the background. AsyncTask needed for network access.
+        @Override
+        public void run() {
+            addData();
+            timerHandler.postDelayed(this, 10000);
+        }
+    };
+
+
 
 
     @Override
@@ -67,22 +89,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-
+        // Init recyclerview
         pullToRefresh =  findViewById(R.id.pullToRefresh);
-        recyclerView = findViewById(R.id.my_recycler_view);
-
-
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 updateList();
             }
         });
+        recyclerView = findViewById(R.id.my_recycler_view);
+
+        dataCountView = findViewById(R.id.count);
+        statusTextView = findViewById(R.id.statusText);
+
+        dataCountView.setText("Pull down to refresh");
+        statusTextView.setText(uploadIsActive ? "Measuring status: Active" : "Measuring status: Inactive");
 
         // Add app bar to activity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Get user login details from Login screen
         Intent intent = getIntent();
         usernameUrl = intent.getStringExtra("UID");
         userEmail = intent.getStringExtra("email");
@@ -90,6 +117,20 @@ public class MainActivity extends AppCompatActivity {
         // Restore userData array
         if (savedInstanceState != null && savedInstanceState.getSerializable("userdata") != null){
             userData = (ArrayList<SensorUserData>) savedInstanceState.getSerializable("userdata");
+            dataCountView.setText("Air measurements: " + userData.size());
+            timePressed = savedInstanceState.getInt("timePressed");
+            usernameUrl = savedInstanceState.getString("usernameUrl");
+            userEmail = savedInstanceState.getString("userEmail");
+
+            if (uploadIsActive){
+                //timerHandler.postDelayed(timerRunnable, 0);
+                statusTextView.setText("Measuring status: Active");
+            }
+            else{
+                statusTextView.setText("Measuring status: Inactive");
+            }
+
+
 
             assert userData != null;
             initRecyclerView(userData);
@@ -102,7 +143,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (userData != null){
+            outState.putInt("timePressed", timePressed);
             outState.putSerializable("userdata", userData);
+            outState.putString("usernameUrl", usernameUrl);
+            outState.putString("userEmail", userEmail);
         }
 
     }
@@ -120,7 +164,16 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
             case R.id.create_sensor_data:
-                addData();
+                if (timePressed == 0 || timePressed % 2 != 0){
+                    timerHandler.postDelayed(timerRunnable, 0);
+                    uploadIsActive = true;
+                }
+                else{
+                    timerHandler.removeCallbacks(timerRunnable);
+                    uploadIsActive = false;
+                }
+                statusTextView.setText(uploadIsActive ? "Measuring status: Active" : "Measuring status: Inactive");
+                timePressed++;
                 return true;
             case R.id.update_data_list:
                 updateList();
@@ -220,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
                     successToast.show();
                 }
 
+            dataCountView.setText("Air measurements: " + userData.size());
             pullToRefresh.setRefreshing(false);
         }
 
